@@ -115,6 +115,5 @@ python main.py --request "삼성전자, SK하이닉스 HBM4 TRL 분석"
 ```
 
 ## Contributors
-
-- 박병주 : Prompt Engineering (Draft · Supervisor · Intent Agent), Web Search Bias Strategy, PDF Report Design
-- 김동우 : RAG Pipeline (Hybrid Retrieval · ChromaDB · Ingest), Graph Architecture, RAG Evaluation (Hit Rate · MRR)
+- 김동우 : 프롬프트 엔지니어링, 웹 서치 노드 구성, PDF 리포트 디자인
+- 박병주 : RAG 파이프라인 구축, Agent 아키텍처 구축, RAG 평가
