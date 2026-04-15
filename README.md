@@ -23,10 +23,27 @@ LangGraph 기반 멀티 에이전트 시스템으로, 반도체·HBM·첨단 패
 |-----------|------------------------------------------------|
 | Framework | LangGraph, LangChain, Python                   |
 | LLM       | GPT-4o (Draft·Supervisor), GPT-4o-mini (Intent) via OpenAI API |
-| Retrieval | ChromaDB(MMR) + BM25 Hybrid Ensemble           |
+| Retrieval | ChromaDB(MMR) + BM25 **Hybrid Ensemble** (최종 선정) |
 | Embedding | BAAI/bge-m3 via sentence-transformers          |
 | Web Search| Tavily Search API                              |
 | Observability | LangSmith                                  |
+
+## RAG Evaluation
+
+평가 데이터셋: 반도체·HBM·패키징 도메인 QA 8쌍 | 평가 지표: Hit Rate@K, MRR | 목표: Hit Rate@5 ≥ 0.70 / MRR ≥ 0.55
+
+| Retriever | Hit Rate@5 | MRR |
+|-----------|:----------:|:---:|
+| Dense (Baseline) | 1.00 | 1.00 |
+| Dense + MMR | 1.00 | 1.00 |
+| BM25 | 0.88 | 0.75 |
+| **Hybrid (Dense+BM25+MMR)** | **1.00** | **0.92** |
+
+- 최종 선정: **Hybrid (Dense MMR 60% + BM25 40%)** — 모든 쿼리 Hit@5 달성, MRR 0.92
+- Dense 단독 대비 MRR이 동등하면서 어휘 기반 검색(BM25)을 통해 전문 용어 쿼리에 강건함
+
+![Retriever 성능 비교](retriever_evaluation.png)
+![Hit Rate by K](hit_rate_by_k.png)
 
 ## Agents
 

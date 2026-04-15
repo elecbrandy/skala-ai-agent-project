@@ -1,4 +1,5 @@
 import json
+import re
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from graph.state import AgentState
@@ -80,7 +81,11 @@ def supervisor_review_node(state: AgentState) -> dict:
     ])
 
     try:
-        result = json.loads(response.content)
+        # LLM이 ```json ... ``` 블록으로 감싸는 경우 제거 후 파싱
+        raw = response.content.strip()
+        raw = re.sub(r"^```(?:json)?\s*", "", raw)
+        raw = re.sub(r"\s*```$", "", raw.strip())
+        result = json.loads(raw)
     except json.JSONDecodeError:
         result = {"approved": False, "feedback": response.content}
 
