@@ -7,18 +7,20 @@ data/ 폴더의 문서를 ChromaDB에 적재하는 스크립트
 """
 
 import os
+import json
 import argparse
 from pathlib import Path
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 
 # ── rag.py 와 동일한 설정 ──────────────────────────────────────
-CHROMA_DIR  = os.getenv("CHROMA_DIR", "./chroma_db")
-DATA_DIR    = os.getenv("DATA_DIR",   "./data")
-EMBED_MODEL = "BAAI/bge-m3"
+CHROMA_DIR    = os.getenv("CHROMA_DIR", "./chroma_db")
+DATA_DIR      = os.getenv("DATA_DIR",   "./data")
+EMBED_MODEL   = "BAAI/bge-m3"
+MANIFEST_PATH = os.path.join(CHROMA_DIR, ".manifest.json")
 
 CHUNK_SIZE    = 512
 CHUNK_OVERLAP = 64
@@ -26,6 +28,65 @@ CHUNK_OVERLAP = 64
 SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".md"}
 
 
+# ── Manifest 관리 ──────────────────────────────────────────────
+def _file_signature(path: Path) -> dict:
+    stat = path.stat()
+    return {"mtime": stat.st_mtime, "size": stat.st_size}
+
+
+def _load_manifest() -> dict:
+    if Path(MANIFEST_PATH).exists():
+        with open(MANIFEST_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+def _save_manifest(files: list[Path]) -> None:
+    Path(CHROMA_DIR).mkdir(parents=True, exist_ok=True)
+    manifest = {str(f): _file_signature(f) for f in files}
+    with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2)
+
+
+def needs_sync(data_dir: str) -> tuple[bool, list[Path]]:
+    """
+    data/ 파일 목록과 manifest를 비교하여 동기화 필요 여부를 반환합니다.
+    Returns: (sync_needed: bool, files: list[Path])
+    """
+    files = [
+        f for f in Path(data_dir).rglob("*")
+        if f.suffix.lower() in SUPPORTED_EXTENSIONS
+    ]
+    if not files:
+        return False, []
+
+    # ChromaDB 자체가 없으면 무조건 동기화 필요
+    if not Path(CHROMA_DIR).exists():
+        return True, files
+
+    manifest = _load_manifest()
+    if not manifest:
+        return True, files
+
+    current = {str(f): _file_signature(f) for f in files}
+    if current == manifest:
+        return False, files
+
+    # 변경·추가된 파일 출력
+    added   = [k for k in current if k not in manifest]
+    changed = [k for k in current if k in manifest and current[k] != manifest[k]]
+    removed = [k for k in manifest if k not in current]
+    if added:
+        print(f"[sync] 신규 파일: {', '.join(Path(k).name for k in added)}")
+    if changed:
+        print(f"[sync] 변경 파일: {', '.join(Path(k).name for k in changed)}")
+    if removed:
+        print(f"[sync] 삭제 파일: {', '.join(Path(k).name for k in removed)}")
+
+    return True, files
+
+
+# ── 문서 로드 ─────────────────────────────────────────────────
 def load_documents(data_dir: str) -> list:
     docs = []
     data_path = Path(data_dir)
@@ -44,12 +105,11 @@ def load_documents(data_dir: str) -> list:
 
             loaded = loader.load()
 
-            # 파일명 기반 메타데이터 보강
             for doc in loaded:
-                doc.metadata.setdefault("source", file.name)
+                doc.metadata.setdefault("source",    file.name)
                 doc.metadata.setdefault("file_path", str(file))
-                doc.metadata.setdefault("date", "")
-                doc.metadata.setdefault("company", _extract_company(file.name))
+                doc.metadata.setdefault("date",      "")
+                doc.metadata.setdefault("company",   _extract_company(file.name))
 
             docs.extend(loaded)
             print(f"  [로드] {file.name}  ({len(loaded)}페이지/청크)")
@@ -61,21 +121,16 @@ def load_documents(data_dir: str) -> list:
 
 
 def _extract_company(filename: str) -> str:
-    """
-    파일명에서 회사명을 추출합니다.
-    예: samsung_hbm4_2025.pdf → 삼성전자
-    파일명에 회사 키워드가 없으면 빈 문자열 반환.
-    """
     name_lower = filename.lower()
     mapping = {
-        "samsung":   "삼성전자",
-        "skhynix":   "SK하이닉스",
-        "hynix":     "SK하이닉스",
-        "micron":    "Micron",
-        "tsmc":      "TSMC",
-        "intel":     "Intel",
-        "amd":       "AMD",
-        "nvidia":    "NVIDIA",
+        "samsung":  "삼성전자",
+        "skhynix":  "SK하이닉스",
+        "hynix":    "SK하이닉스",
+        "micron":   "Micron",
+        "tsmc":     "TSMC",
+        "intel":    "Intel",
+        "amd":      "AMD",
+        "nvidia":   "NVIDIA",
     }
     for key, company in mapping.items():
         if key in name_lower:
@@ -83,6 +138,7 @@ def _extract_company(filename: str) -> str:
     return ""
 
 
+# ── 청크 분할 ─────────────────────────────────────────────────
 def split_documents(docs: list) -> list:
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
@@ -94,6 +150,7 @@ def split_documents(docs: list) -> list:
     return chunks
 
 
+# ── ChromaDB 적재 ─────────────────────────────────────────────
 def build_vectorstore(chunks: list, reset: bool = False) -> Chroma:
     print(f"[ingest] 임베딩 모델 로드 중: {EMBED_MODEL}")
     embedding_model = HuggingFaceEmbeddings(
@@ -117,6 +174,7 @@ def build_vectorstore(chunks: list, reset: bool = False) -> Chroma:
     return vectorstore
 
 
+# ── 진입점 ───────────────────────────────────────────────────
 def main(data_dir: str, reset: bool) -> None:
     print("=" * 50)
     print("  Tech Strategy Agent — Document Ingestion")
@@ -126,12 +184,18 @@ def main(data_dir: str, reset: bool) -> None:
     print(f"  초기화 여부 : {'Yes (기존 DB 삭제)' if reset else 'No (기존 DB에 추가)'}")
     print("=" * 50 + "\n")
 
-    docs   = load_documents(data_dir)
+    sync_needed, files = needs_sync(data_dir)
+    if not sync_needed and not reset:
+        print("[ingest] ChromaDB 최신 상태 — 동기화 건너뜀\n")
+        return
+
+    docs = load_documents(data_dir)
     if not docs:
         return
 
     chunks = split_documents(docs)
     build_vectorstore(chunks, reset=reset)
+    _save_manifest(files)
 
     print("\n✅ 완료 — 이제 main.py 를 실행하세요.")
 
