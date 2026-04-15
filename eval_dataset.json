@@ -1,0 +1,86 @@
+[
+  {
+    "question": "중국의 국가 주요 R&D 프로그램의 보조금 번호는 무엇인가요?",
+    "chunk_id": "650215856966",
+    "source": "data/2509.12993v2.pdf",
+    "content_preview": "the National Key R&D Program of China (Grant No. 2023YFB4503704\nand 2024YFB4505601), and the Young Elite Scientists Spon"
+  },
+  {
+    "question": "nRREFD가 사용된 반복 서브 루프의 패턴 사이클 수는 무엇인가요?",
+    "chunk_id": "dc50a914cd12",
+    "source": "data/JESD270-4A.pdf",
+    "content_preview": "2 2 × nRREFD  repeat sub -loop 0 pattern until cycle (3 × nRREFD -1); use BA=02 h instead  \n3 3 × nRREFD  repeat sub -lo"
+  },
+  {
+    "question": "iMEX 기술을 활용하여 MPI 집합 통신 성능을 향상시키기 위한 발표는 어느 연도에 진행되었나요?",
+    "chunk_id": "5226c5c4c04e",
+    "source": "data/Innovation in Computational Architecture_ Opportunities and Challenges of CXL Memory Disaggregation Technology in Intelligent Computing Centers.pdf",
+    "content_preview": "Analysis, Atlanta, GA, USA, 2024, pp. 1–18.[41]\n H.  Ahn,  Enhancing  the  MPI  collective  communication\nperformance  u"
+  },
+  {
+    "question": "\"Eagle and Finch\" 연구의 저자들은 누구인가요?",
+    "chunk_id": "e4832e4a3480",
+    "source": "data/2507.10178v3.pdf",
+    "content_preview": "Atsushi Saito, Guangyu Song, Haoqin Tu, Ruichong Zhang, Bingchen Zhao,\nQihang Zhao, Jian Zhu, and Rui-Jie Zhu. 2024. Eag"
+  },
+  {
+    "question": "서버의 총 소유 비용(TCO)은 메모리를 추가함으로써 얼마나 증가하는가?",
+    "chunk_id": "7ffd73aed5ee",
+    "source": "data/CR-CXL-101_FINAL.pdf",
+    "content_preview": "and Memory Bandwidth\n(Source: ABI Research)\n \nBridging\tmemory\tto\tcomputing\tengines\tand\toptimizing\tmemory\tmanagement\tfor\t"
+  },
+  {
+    "question": "상태 행렬을 갱신하기 위해 사용되는 스칼라 값 𝑎ℎ의 역할은 무엇인가요?",
+    "chunk_id": "610aed8009f9",
+    "source": "data/2507.10178v3.pdf",
+    "content_preview": "updated through the following steps at each time step:\n(1)State decay.The previous state matrix is decayed by multiply-\n"
+  },
+  {
+    "question": "서버의 자재 명세서(BOM)에서 DRAM 비용이 차지하는 비율은 어느 정도인가요?",
+    "chunk_id": "0dfe40491f5e",
+    "source": "data/CR-CXL-101_FINAL.pdf",
+    "content_preview": "OPPORTUNITIES AND CHALLENGES FOR COMPUTE EXPRESS LINK (CXL)5\n www.abiresearch.comKEY MARKET DRIVERS\nData centers face mo"
+  },
+  {
+    "question": "CXL 4.0의 최대 링크 속도는 얼마인가요?",
+    "chunk_id": "6ea977a0b007",
+    "source": "data/CXL_4.0-Webinar_December-2025_FINAL.pdf",
+    "content_preview": "CXL Specification Feature Summary\nFeatures CXL 1.0 / 1.1 CXL 2.0 CXL 3.x CXL 4.0\nRelease date 2019 2020 2022 -2024 2025\n"
+  },
+  {
+    "question": "IDD7 측정과 관련된 표의 번호는 무엇인가요?",
+    "chunk_id": "81ddc4679a27",
+    "source": "data/JESD270-4A.pdf",
+    "content_preview": "Table 104 — IDD7 Measurement -Loop Pattern  ................................ ................................ .........."
+  },
+  {
+    "question": "CXL.mem 프로토콜을 기반으로 하는 Type 2 장치의 예로는 어떤 두 가지 기술이 언급되었나요?",
+    "chunk_id": "4c9ecc78e8de",
+    "source": "data/Innovation in Computational Architecture_ Opportunities and Challenges of CXL Memory Disaggregation Technology in Intelligent Computing Centers.pdf",
+    "content_preview": "based  on  the  CXL.mem  protocol.  These  devices  can\nconnect various types of memory and support multiple\nmemory  hie"
+  },
+  {
+    "question": "클라우드 컴퓨팅의 확산과 관련하여 어떤 기술적 특성이 강조되고 있나요?",
+    "chunk_id": "150d15b3f6b4",
+    "source": "data/CXL_4.0-Webinar_December-2025_FINAL.pdf",
+    "content_preview": "Proliferation \nof Cloud \nComputing\nUnified \nMemory\nAccess\nGrowth of AI & Analytics\nHigh BW\nLow Latency\nCloudification of"
+  },
+  {
+    "question": "각 SRAM-PIM 코어는 몇 개의 매크로 그룹(MG)으로 구성되어 있나요?",
+    "chunk_id": "ca5f1ed72ff1",
+    "source": "data/2509.12993v2.pdf",
+    "content_preview": "scheduling module.\nComputational Module.Each SRAM-PIM core incorpo-\nrates multiple specialized computational units to me"
+  },
+  {
+    "question": "SMCSim이 어떤 스타일의 PIM 아키텍처를 조사하기 위한 플랫폼으로 사용되는지 구체적으로 무엇인가요?",
+    "chunk_id": "89ab0adbeb4f",
+    "source": "data/2512.00096v1.pdf",
+    "content_preview": "terface, users can configure vault count, link bandwidth, and interconnect\ntopology, making the simulator adaptable to a"
+  },
+  {
+    "question": "PrIM 벤치마크 스위트는 어떤 회사의 아키텍처를 평가하기 위해 설계되었나요?",
+    "chunk_id": "6d6f9e4a6cee",
+    "source": "data/2512.00096v1.pdf",
+    "content_preview": "12.2.4. PrIM\nProcessing-In-Memory benchmarks(PrIM)is the first comprehensive\nbenchmark suite designed specifically for e"
+  }
+]
