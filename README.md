@@ -1,58 +1,55 @@
 # Tech Strategy Agent
 
-LangGraph 기반 멀티 에이전트 시스템으로, 반도체·HBM·첨단 패키징 분야의 경쟁사 기술 동향을 자동 수집·분석하여 TRL 기반 기술 전략 보고서를 생성합니다.
+LangGraph 기반 멀티 에이전트 시스템으로 반도체·HBM 분야 경쟁사 기술 동향을 자동 수집·분석하여 TRL 기반 전략 보고서(PDF)를 생성합니다.
 
 ## Overview
 
-- **Objective** : 공개 간접 지표(특허·학회·채용·공급 발표)를 기반으로 경쟁사 TRL을 추정하고, R&D 우선순위 관점의 전략 시사점을 도출
-- **Method** : RAG(Hybrid Retrieval) + 웹 검색 병렬 수집 → Reflection 루프 기반 초안 품질 검토 → Supervisor 승인 후 최종 보고서 출력
-- **Tools** : LangGraph, LangChain, ChromaDB, Tavily Search, LangSmith
+- **Objective** : 공개 간접 지표(특허·학회·채용·공급 발표) 기반 경쟁사 TRL 추정 및 R&D 우선순위 관점의 전략 시사점 도출
+- **Method** : Hybrid RAG + 웹 검색 병렬 수집 → Supervisor Reflection 루프로 품질 검토 → 승인 후 PDF 보고서 출력
+- **Tools** : LangGraph, LangChain, ChromaDB, Tavily Search, LangSmith, WeasyPrint
 
 ## Features
 
-- **TRL 기반 기술 성숙도 분석** : NASA 9단계 TRL 척도로 경쟁사별 기술 위치를 정량적으로 추정
-- **TRL 4~6 한계 고지** : 핵심 영업 비밀 구간(수율·공정 파라미터)은 간접 지표 기반 추정임을 명시하여 보고서 신뢰성 확보
-- **Hybrid RAG 검색** : Dense(MMR) + BM25 앙상블 검색으로 관련 문서 재현율 향상
-- **확증 편향 방지 전략** : 웹 검색 쿼리를 `positive / negative / indicator` 3가지 편향 레이블로 분리 생성, 동일 도메인 2건 초과 수집 제한
-- **Reflection 루프** : Supervisor가 완결성·근거성·규정 준수·균형성·전략성 5개 기준으로 초안을 검토하고 미충족 시 재작성 지시
-- **신뢰도 레이블 자동 부여** : 모든 TRL 추정치에 HIGH / MED / LOW 레이블 표기
+- **TRL 기반 기술 성숙도 분석** : NASA 9단계 TRL 척도로 경쟁사별 기술 위치 정량 추정
+- **TRL 4~6 한계 고지** : 핵심 영업 비밀 구간은 간접 지표 기반 추정임을 명시하여 보고서 신뢰성 확보
+- **Hybrid RAG 검색** : Dense(MMR) + BM25 앙상블로 Hit Rate@5 1.00 / MRR 0.92 달성
+- **확증 편향 방지 전략** : 웹 검색 쿼리를 positive / negative / indicator 3종으로 분리 생성, 동일 도메인 2건 초과 수집 제한
+- **Supervisor Reflection 루프** : 완결성·근거성·규정 준수·균형성·전략성 5개 기준 자동 검토 및 재작성 지시
+- **PDF 보고서 출력** : Markdown → HTML → PDF 자동 변환 (A4, 페이지 번호 포함)
 
 ## Tech Stack
 
-| Category  | Details                                        |
-|-----------|------------------------------------------------|
-| Framework | LangGraph, LangChain, Python                   |
-| LLM       | GPT-4o (Draft·Supervisor), GPT-4o-mini (Intent) via OpenAI API |
-| Retrieval | ChromaDB(MMR) + BM25 **Hybrid Ensemble** (최종 선정) |
-| Embedding | BAAI/bge-m3 via sentence-transformers          |
-| Web Search| Tavily Search API                              |
-| Observability | LangSmith                                  |
+| Category    | Details                                                      |
+|-------------|--------------------------------------------------------------|
+| Framework   | LangGraph, LangChain, Python                                 |
+| LLM         | GPT-4o (Draft · Supervisor), GPT-4o-mini (Intent) via OpenAI API |
+| Retrieval   | ChromaDB MMR + BM25 Hybrid Ensemble (Hit Rate@5: 1.00, MRR: 0.92) |
+| Embedding   | BAAI/bge-m3 via sentence-transformers                        |
+| Web Search  | Tavily Search API                                            |
+| Observability | LangSmith                                                  |
 
 ## RAG Evaluation
 
-평가 데이터셋: 반도체·HBM·패키징 도메인 QA 8쌍 | 평가 지표: Hit Rate@K, MRR | 목표: Hit Rate@5 ≥ 0.70 / MRR ≥ 0.55
+평가 데이터셋: 반도체·HBM·패키징 도메인 QA 8쌍 | 목표: Hit Rate@5 ≥ 0.70 / MRR ≥ 0.55
 
 | Retriever | Hit Rate@5 | MRR |
 |-----------|:----------:|:---:|
 | Dense (Baseline) | 1.00 | 1.00 |
 | Dense + MMR | 1.00 | 1.00 |
 | BM25 | 0.88 | 0.75 |
-| **Hybrid (Dense+BM25+MMR)** | **1.00** | **0.92** |
-
-- 최종 선정: **Hybrid (Dense MMR 60% + BM25 40%)** — 모든 쿼리 Hit@5 달성, MRR 0.92
-- Dense 단독 대비 MRR이 동등하면서 어휘 기반 검색(BM25)을 통해 전문 용어 쿼리에 강건함
+| **Hybrid (Dense MMR 60% + BM25 40%)** | **1.00** | **0.92** |
 
 ![Retriever 성능 비교](retriever_evaluation.png)
 ![Hit Rate by K](hit_rate_by_k.png)
 
 ## Agents
 
-- **Intent Agent** : 사용자 자연어 요청에서 키워드·기업·분석 깊이·기간 범위를 파싱
-- **RAG Agent** : 키워드 × 기업 조합 다중 쿼리로 내부 벡터 DB에서 관련 문서 검색
-- **Web Search Agent** : Tavily로 긍정·반론·간접 지표 쿼리를 병렬 실행, 편향 필터링 적용
-- **Draft Agent** : 수집된 RAG·웹 결과와 Supervisor 피드백을 반영하여 TRL 분석 보고서 초안 작성
-- **Supervisor Agent** : 초안을 5개 기준(완결성·근거성·규정 준수·균형성·전략성)으로 검토하고 승인 또는 재작성 지시
-- **Formatting Agent** : 승인된 초안에 메타 헤더(생성 일시·분석 대상·승인 상태)를 추가하여 최종 보고서 포맷 완성
+- **Intent Agent** : 사용자 자연어 요청에서 키워드·기업·분석 깊이·기간 범위 파싱
+- **RAG Agent** : 키워드 × 기업 조합 다중 쿼리로 내부 벡터 DB 검색 (Hybrid Retrieval)
+- **Web Search Agent** : Tavily로 긍정·반론·간접 지표 쿼리 병렬 실행, 편향 필터링 적용
+- **Draft Agent** : RAG·웹 결과 및 Supervisor 피드백을 반영하여 TRL 분석 보고서 초안 작성
+- **Supervisor Agent** : 5개 기준으로 초안 검토 후 승인 또는 재작성 지시 (Reflection 루프)
+- **Formatting Agent** : 승인 초안에 메타 헤더 추가 후 PDF 변환
 
 ## Architecture
 
@@ -60,50 +57,45 @@ LangGraph 기반 멀티 에이전트 시스템으로, 반도체·HBM·첨단 패
 사용자 요청
     │
     ▼
-[Intent Agent]  ── 키워드·기업·깊이 파싱
+[Intent Agent]
     │
-    ├─────────────────────┐
-    ▼                     ▼
-[RAG Agent]         [Web Search Agent]   ← 병렬 실행
-    │                     │
-    └──────────┬──────────┘
+    ├──────────────────────┐
+    ▼                      ▼
+[RAG Agent]         [Web Search Agent]   ← 병렬
+    │                      │
+    └──────────┬───────────┘
                ▼
-     [Supervisor Review]  ◄──────────────────┐
-          │                                  │
-     approved?                               │
-    ┌──No──┤                                 │
-    │      └─► [Increment Retry] ──► [Draft Agent] ─┘
-    │Yes
+     [Supervisor Review]  ◄───────────────────┐
+          │                                   │
+     approved?                                │
+    ┌──No──┤                                  │
+    │      └─► [Increment Retry] → [Draft Agent] ─┘
+    │ Yes
     ▼
-[Formatting Agent]
-    │
-    ▼
-[Supervisor Final]
-    │
-    ▼
- output_report.md
+[Formatting Agent] → [Supervisor Final] → output_report.pdf
 ```
 
 ## Directory Structure
 
 ```
 tech-strategy-agent/
+├── data/                  # 분석 대상 PDF 문서
 ├── agents/
-│   ├── intent.py          # 사용자 요청 파싱
+│   ├── intent.py          # 요청 파싱
 │   ├── rag.py             # Hybrid RAG 검색
 │   ├── web_search.py      # 웹 검색 + 편향 필터링
 │   ├── draft.py           # 보고서 초안 작성
-│   ├── supervisor.py      # 품질 검토 및 최종 승인
-│   └── formatting.py      # 최종 포맷 완성
+│   ├── supervisor.py      # 품질 검토 및 승인
+│   └── formatting.py      # PDF 변환
 ├── graph/
 │   ├── state.py           # AgentState 정의
-│   ├── graph.py           # LangGraph 그래프 구성
-│   └── edges.py           # 조건부 라우팅 로직
-├── chroma_db/             # 벡터 DB (로컬, .gitignore)
-├── main.py                # 실행 진입점
+│   ├── graph.py           # 그래프 구성
+│   └── edges.py           # 조건부 라우팅
+├── main.py                # 실행 진입점 (data/ 자동 동기화 포함)
+├── ingest.py              # ChromaDB 문서 적재
+├── rag_evaluation.py      # Retrieval 성능 평가
 ├── .env.example           # 환경 변수 템플릿
-├── requirements.txt
-└── README.md
+└── requirements.txt
 ```
 
 ## Getting Started
@@ -116,7 +108,7 @@ pip install -r requirements.txt
 cp .env.example .env
 # .env 에 OPENAI_API_KEY, TAVILY_API_KEY 입력
 
-# 3. 실행 (기본 요청)
+# 3. data/ 에 PDF 문서 추가 후 실행 (자동 동기화)
 python main.py
 
 # 4. 커스텀 요청
@@ -125,5 +117,5 @@ python main.py --request "삼성전자, SK하이닉스 HBM4 TRL 분석"
 
 ## Contributors
 
-- 박병주 :
-- 김동우 : 
+- 박병주 : Prompt Engineering (Draft · Supervisor · Intent Agent), Web Search Bias Strategy, PDF Report Design
+- 김동우 : RAG Pipeline (Hybrid Retrieval · ChromaDB · Ingest), Graph Architecture, RAG Evaluation (Hit Rate · MRR)
