@@ -4,11 +4,33 @@ tech-strategy-agent 실행 진입점
 사용법:
     python main.py
     python main.py --request "SK하이닉스, 삼성전자 HBM4 분석"
+    python main.py --no-sync          # data/ 동기화 건너뜀
+    python main.py --reset-db         # ChromaDB 초기화 후 재적재
 """
 
 import asyncio
 import argparse
+from pathlib import Path
+
 from graph.graph import graph
+from ingest import DATA_DIR, SUPPORTED_EXTENSIONS, load_documents, split_documents, build_vectorstore
+
+
+def sync_data(data_dir: str = DATA_DIR, reset: bool = False) -> None:
+    """data/ 폴더의 문서를 ChromaDB에 동기화합니다."""
+    files = [
+        f for f in Path(data_dir).rglob("*")
+        if f.suffix.lower() in SUPPORTED_EXTENSIONS
+    ]
+    if not files:
+        print(f"[sync] '{data_dir}' 에 문서가 없습니다 — 동기화 건너뜀\n")
+        return
+
+    print(f"[sync] {len(files)}개 파일 감지 → ChromaDB 동기화 시작")
+    docs   = load_documents(data_dir)
+    chunks = split_documents(docs)
+    build_vectorstore(chunks, reset=reset)
+    print()
 
 DEFAULT_REQUEST = (
     "SK하이닉스, 삼성전자, Micron의 HBM4 및 CoWoS 기술 성숙도를 분석하고 "
@@ -64,7 +86,12 @@ async def run(user_request: str) -> str:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Tech Strategy Agent")
-    parser.add_argument("--request", type=str, default=DEFAULT_REQUEST)
+    parser.add_argument("--request",  type=str, default=DEFAULT_REQUEST)
+    parser.add_argument("--no-sync",  action="store_true", help="data/ 동기화 건너뜀")
+    parser.add_argument("--reset-db", action="store_true", help="ChromaDB 초기화 후 재적재")
     args = parser.parse_args()
+
+    if not args.no_sync:
+        sync_data(reset=args.reset_db)
 
     asyncio.run(run(args.request))
