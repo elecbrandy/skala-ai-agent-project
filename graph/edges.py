@@ -1,6 +1,6 @@
 from graph.state import AgentState
 
-MAX_RETRY = 3
+MAX_RETRY = 5
 
 
 # NOTE: route_after_search 는 현재 graph.py 에서 사용되지 않습니다.

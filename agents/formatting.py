@@ -24,12 +24,9 @@ def formatting_node(state: AgentState) -> dict:
             parts.append(" / ".join(keywords))
         subject_line = f"> 분석 대상: {' — '.join(parts)}\n"
 
-    status_icon = "✅ Supervisor 승인" if approved else "⚠️ 최대 재시도 초과 — 부분 보고서"
-
     header = f"""# 기술 전략 분석 보고서
 
 > 생성일시: {now}
-> 상태: {status_icon}
 {subject_line}
 ---
 

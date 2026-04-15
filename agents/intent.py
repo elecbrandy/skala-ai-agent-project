@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, SystemMessage
 from graph.state import AgentState
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
 SYSTEM_PROMPT = """
 당신은 기술 전략 분석 요청을 파싱하는 에이전트입니다.
